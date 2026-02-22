@@ -4,19 +4,29 @@ class_name GameBoard
 const GRID_WIDTH = 8
 const GRID_HEIGHT = 16
 const CELL_SIZE = 50
+const LEVEL_CONFIG = {
+	1: { "elements": 10, "name": "Calm Beginnings" },
+	2: { "elements": 15, "name": "Rising Chaos" },
+	3: { "elements": 20, "name": "Elemental Storm" }
+}
 
 var grid = []
 var current_pair: RunePair
 var fall_timer = 0.0
 var fall_speed = 0.5
+var initial_element_count: int = 10
+var game_active: bool = true
+var next_rune_pair_data: Dictionary = {}
+var paused: bool = false
 
 signal game_over
+signal win_condition_met()
+signal loss_condition_met()
+signal elements_remaining_changed(count: int)
+signal preview_updated(rune1_type: int, rune2_type: int, rotation: int)
 
 func _ready():
-	initialize_grid()
-	draw_boundaries()
-	spawn_elements()
-	spawn_new_pair()
+	initialize_level(initial_element_count)
 
 func draw_boundaries():
 	queue_redraw()
@@ -38,7 +48,24 @@ func _draw():
 		var line_end = Vector2(GRID_WIDTH * CELL_SIZE, y * CELL_SIZE)
 		draw_line(line_start, line_end, Color(0.3, 0.3, 0.3), 1)
 
+func cleanup_board():
+	# Remove all RunePair, Rune, and Element child nodes
+	# We need to collect nodes first, then free them, to avoid modifying the array while iterating
+	var nodes_to_remove = []
+	for child in get_children():
+		if child is RunePair or child is Rune or child is Element:
+			nodes_to_remove.append(child)
+	
+	# Now free all collected nodes
+	for node in nodes_to_remove:
+		node.queue_free()
+		# Also remove from parent immediately to ensure it's not counted
+		remove_child(node)
+
 func initialize_grid():
+	# Clean up any existing game objects before reinitializing
+	cleanup_board()
+	
 	grid.resize(GRID_HEIGHT)
 	for y in range(GRID_HEIGHT):
 		grid[y] = []
@@ -60,13 +87,86 @@ func spawn_elements():
 			grid[y][x] = element
 			add_child(element)
 
+func initialize_level(element_count: int) -> void:
+	# Clear the board
+	initialize_grid()
+	draw_boundaries()
+	
+	# Spawn specified number of elements
+	spawn_initial_elements(element_count)
+	
+	# Check if spawn position is available
+	if not check_spawn_availability():
+		push_warning("Spawn blocked after initialization, clearing top rows")
+		clear_top_rows(2)
+	
+	# Initialize preview and spawn first pair
+	next_rune_pair_data = generate_next_pair_data()
+	spawn_new_pair()
+
+func spawn_initial_elements(element_count: int) -> void:
+	# Spawn specified number of elements randomly at the bottom
+	# Use a retry mechanism to ensure we spawn the requested count
+	var spawned_count = 0
+	var max_attempts = element_count * 10  # Allow many attempts to handle collisions
+	var attempt = 0
+	
+	while spawned_count < element_count and attempt < max_attempts:
+		var x = randi() % GRID_WIDTH
+		var y = GRID_HEIGHT - 1 - (spawned_count / GRID_WIDTH)
+		if grid[y][x] == null:
+			var element = Element.new()
+			element.set_element_type(randi() % 4)
+			element.grid_x = x
+			element.grid_y = y
+			element.position = grid_to_world(x, y)
+			grid[y][x] = element
+			add_child(element)
+			spawned_count += 1
+		attempt += 1
+
+func clear_top_rows(row_count: int) -> void:
+	# Clear the top N rows to ensure spawn position is available
+	for y in range(row_count):
+		for x in range(GRID_WIDTH):
+			if grid[y][x] != null:
+				var piece = grid[y][x]
+				grid[y][x] = null
+				piece.queue_free()
+
+func generate_next_pair_data() -> Dictionary:
+	return {
+		"rune1_type": randi() % 4,
+		"rune2_type": randi() % 4,
+		"rotation": 0
+	}
+
 func spawn_new_pair():
+	if not game_active:
+		return
+	
+	# Check if spawn position is available
+	if not check_spawn_availability():
+		loss_condition_met.emit()
+		return
+	
 	current_pair = RunePair.new()
+	# Use preview data to set rune types
+	current_pair.use_preview_data = true
+	current_pair.preview_rune1_type = next_rune_pair_data["rune1_type"]
+	current_pair.preview_rune2_type = next_rune_pair_data["rune2_type"]
 	current_pair.grid_x = GRID_WIDTH / 2
 	current_pair.grid_y = 0
 	# Position at top-left of the cell (rune1 will be at 0,0 relative to pair)
 	current_pair.position = Vector2(current_pair.grid_x * CELL_SIZE, current_pair.grid_y * CELL_SIZE)
 	add_child(current_pair)
+	
+	# Generate preview data for the next pair
+	next_rune_pair_data = generate_next_pair_data()
+	
+	# Emit signals to update UI
+	preview_updated.emit(next_rune_pair_data["rune1_type"], next_rune_pair_data["rune2_type"], next_rune_pair_data["rotation"])
+	elements_remaining_changed.emit(get_element_count())
 
 func grid_to_world(x: int, y: int) -> Vector2:
 	# Return center of cell for individual pieces
@@ -77,6 +177,10 @@ func grid_to_world_pair(x: int, y: int) -> Vector2:
 	return Vector2(x * CELL_SIZE, y * CELL_SIZE)
 
 func _process(delta):
+	# Don't process game logic when paused
+	if paused:
+		return
+	
 	if current_pair == null:
 		return
 	
@@ -179,6 +283,13 @@ func get_pair_positions(x: int, y: int, rotation: int = current_pair.rotation_st
 func lock_pair():
 	var positions = get_pair_positions(current_pair.grid_x, current_pair.grid_y)
 	
+	# Debug logging to detect grid position conflicts
+	print("Locking rune1 at (%d, %d), rune2 at (%d, %d)" % [positions[0].x, positions[0].y, positions[1].x, positions[1].y])
+	if grid[positions[0].y][positions[0].x] != null:
+		print("WARNING: Grid position (%d, %d) already occupied by %s!" % [positions[0].x, positions[0].y, grid[positions[0].y][positions[0].x].get_class()])
+	if grid[positions[1].y][positions[1].x] != null:
+		print("WARNING: Grid position (%d, %d) already occupied by %s!" % [positions[1].x, positions[1].y, grid[positions[1].y][positions[1].x].get_class()])
+	
 	# Place rune1
 	var rune1 = current_pair.rune1
 	rune1.grid_x = positions[0].x
@@ -198,11 +309,24 @@ func lock_pair():
 	current_pair.queue_free()
 	current_pair = null
 	
-	check_matches()
-	apply_gravity()
+	# Process matches and gravity in a loop until stable
+	var changes_made = true
+	while changes_made:
+		changes_made = false
+		
+		# Check for matches
+		var matches_found = check_and_remove_matches()
+		if matches_found:
+			changes_made = true
+		
+		# Apply gravity
+		var pieces_fell = apply_gravity_once()
+		if pieces_fell:
+			changes_made = true
+	
 	spawn_new_pair()
 
-func check_matches():
+func check_and_remove_matches() -> bool:
 	var to_remove = []
 	
 	# Check horizontal matches
@@ -227,15 +351,11 @@ func check_matches():
 	for piece in unique_remove.keys():
 		remove_piece(piece)
 	
-	# Apply gravity after removing pieces
+	# Check win condition after removing matched pieces
 	if unique_remove.size() > 0:
-		apply_gravity()
-
-func has_empty_spaces_above_pieces() -> bool:
-	for y in range(GRID_HEIGHT - 1):
-		for x in range(GRID_WIDTH):
-			if grid[y][x] != null and grid[y + 1][x] == null:
-				return true
+		check_win_condition()
+		return true
+	
 	return false
 
 func check_line(start_x: int, start_y: int, dx: int, dy: int, count: int) -> Array:
@@ -272,23 +392,42 @@ func remove_piece(piece):
 	grid[piece.grid_y][piece.grid_x] = null
 	piece.queue_free()
 
-func apply_gravity():
-	# Apply gravity from bottom to top
-	var pieces_fell = true
-	while pieces_fell:
-		pieces_fell = false
-		for y in range(GRID_HEIGHT - 2, -1, -1):  # Start from second-to-bottom row
-			for x in range(GRID_WIDTH):
-				if grid[y][x] != null and grid[y + 1][x] == null:
-					# Move piece down
-					var piece = grid[y][x]
-					grid[y][x] = null
-					grid[y + 1][x] = piece
-					piece.grid_y = y + 1
-					piece.position = grid_to_world(x, y + 1)
-					pieces_fell = true
-	
-	# Check for new matches after gravity
-	check_matches()
-	if has_empty_spaces_above_pieces():
-		apply_gravity()
+func apply_gravity_once() -> bool:
+	var pieces_fell = false
+	for y in range(GRID_HEIGHT - 2, -1, -1):
+		for x in range(GRID_WIDTH):
+			if grid[y][x] != null and grid[y][x] is Rune and grid[y + 1][x] == null:
+				var piece = grid[y][x]
+				grid[y][x] = null
+				grid[y + 1][x] = piece
+				piece.grid_y = y + 1
+				piece.position = grid_to_world(x, y + 1)
+				pieces_fell = true
+	return pieces_fell
+
+func stop_game() -> void:
+	game_active = false
+
+func get_element_count() -> int:
+	var count = 0
+	for y in range(GRID_HEIGHT):
+		for x in range(GRID_WIDTH):
+			if grid[y][x] != null and grid[y][x] is Element:
+				count += 1
+	return count
+
+func check_win_condition() -> void:
+	var element_count = get_element_count()
+	if element_count == 0:
+		win_condition_met.emit()
+
+func check_spawn_availability() -> bool:
+	# Check if the spawn position (GRID_WIDTH / 2, 0) is available for a new pair
+	# Use the existing can_place_pair() method with spawn coordinates
+	var spawn_x = GRID_WIDTH / 2
+	var spawn_y = 0
+	return can_place_pair(spawn_x, spawn_y, 0)  # Check with default rotation (0)
+
+## Set the paused state of the game board
+func set_paused(is_paused: bool) -> void:
+	paused = is_paused

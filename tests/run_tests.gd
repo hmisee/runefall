@@ -5,19 +5,19 @@ extends SceneTree
 func _init():
 	print("=== Runefall Test Runner ===\n")
 	
-	# Load and run bug exploration test
-	print("\n### Running Bug Exploration Tests ###")
-	var bug_test_script = load("res://tests/test_rotation_bug_exploration.gd")
-	var bug_test_instance = bug_test_script.new()
-	bug_test_instance.run_tests()
-	bug_test_instance.queue_free()
+	# Load and run level cleanup exploration tests
+	print("\n### Running Level Cleanup Exploration Tests ###")
+	var cleanup_exploration_script = load("res://tests/test_level_cleanup_exploration.gd")
+	var cleanup_exploration_instance = cleanup_exploration_script.new()
+	cleanup_exploration_instance.run_tests()
+	cleanup_exploration_instance.queue_free()
 	
-	# Load and run preservation tests
-	print("\n### Running Preservation Property Tests ###")
-	var preservation_test_script = load("res://tests/test_preservation_properties.gd")
-	var preservation_test_instance = preservation_test_script.new()
-	preservation_test_instance.run_tests()
-	preservation_test_instance.queue_free()
+	# Load and run level cleanup preservation tests
+	print("\n### Running Level Cleanup Preservation Tests ###")
+	var cleanup_preservation_script = load("res://tests/test_level_cleanup_preservation.gd")
+	var cleanup_preservation_instance = cleanup_preservation_script.new()
+	cleanup_preservation_instance.run_tests()
+	cleanup_preservation_instance.queue_free()
 	
 	# Exit
 	print("\n=== Tests Complete ===")

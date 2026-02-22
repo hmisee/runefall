@@ -6,6 +6,9 @@ var rune2: Rune
 var grid_x: int = 0
 var grid_y: int = 0
 var rotation_state: int = 0
+var use_preview_data: bool = false
+var preview_rune1_type: int = 0
+var preview_rune2_type: int = 0
 
 func _ready():
 	rune1 = Rune.new()
@@ -13,7 +16,12 @@ func _ready():
 	add_child(rune1)
 	add_child(rune2)
 	
-	randomize_runes()
+	if use_preview_data:
+		rune1.set_rune_type(preview_rune1_type)
+		rune2.set_rune_type(preview_rune2_type)
+	else:
+		randomize_runes()
+	
 	update_positions()
 
 func randomize_runes():
