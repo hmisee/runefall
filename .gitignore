@@ -1,7 +1,11 @@
 # Godot-specific ignores
+.godot/
 .import/
 export.cfg
 export_presets.cfg
+
+# Godot UID files (auto-generated resource IDs)
+*.uid
 
 # Mono-specific ignores
 .mono/

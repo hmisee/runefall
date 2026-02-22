@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Test Game Reminder",
+  "description": "Reminds to test the game after making scene or script changes",
+  "version": "1",
+  "when": {
+    "type": "agentStop"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Remind the user to test the game in Godot to verify the changes work correctly"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Validate GDScript on Save",
+  "description": "Checks for syntax errors when GDScript files are saved",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "*.gd"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Check this GDScript file for syntax errors and potential issues using getDiagnostics"
+  }
+}
