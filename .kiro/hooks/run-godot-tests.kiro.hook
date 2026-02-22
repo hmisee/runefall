@@ -11,6 +11,6 @@
   },
   "then": {
     "type": "runCommand",
-    "command": "./run_tests.bat"
+    "command": "run_tests.bat"
   }
 }

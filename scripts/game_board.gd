@@ -88,6 +88,7 @@ func spawn_elements():
 			add_child(element)
 
 func initialize_level(element_count: int) -> void:
+	fall_speed = 0.5
 	# Clear the board
 	initialize_grid()
 	draw_boundaries()

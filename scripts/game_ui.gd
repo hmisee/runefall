@@ -19,8 +19,10 @@ const RUNE_COLORS = [
 const PREVIEW_RUNE_SIZE = 30
 
 func _ready():
-	# Hide message by default
+	# Configure message label for text wrapping
 	if message_label:
+		message_label.autowrap_mode = TextServer.AUTOWRAP_WORD
+		message_label.custom_minimum_size = Vector2(800, 150)
 		message_label.hide()
 
 func show_message(text: String, duration: float = 0.0) -> void:

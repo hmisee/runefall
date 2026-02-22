@@ -19,6 +19,20 @@ func _init():
 	cleanup_preservation_instance.run_tests()
 	cleanup_preservation_instance.queue_free()
 	
+	# Load and run level progression bugs exploration tests
+	print("\n### Running Level Progression Bugs Exploration Tests ###")
+	var progression_exploration_script = load("res://tests/test_level_progression_bugs_exploration.gd")
+	var progression_exploration_instance = progression_exploration_script.new()
+	progression_exploration_instance.run_tests()
+	progression_exploration_instance.queue_free()
+	
+	# Load and run level progression bugs preservation tests
+	print("\n### Running Level Progression Bugs Preservation Tests ###")
+	var progression_preservation_script = load("res://tests/test_level_progression_bugs_preservation.gd")
+	var progression_preservation_instance = progression_preservation_script.new()
+	progression_preservation_instance.run_tests()
+	progression_preservation_instance.queue_free()
+	
 	# Exit
 	print("\n=== Tests Complete ===")
 	quit()

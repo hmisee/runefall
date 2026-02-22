@@ -117,6 +117,10 @@ func _on_state_changed_for_ui(new_state: GameState.State):
 				_auto_progress_to_next_level()
 		GameState.State.LOSS:
 			game_ui.show_message("Game Over - The elements remain angry")
+			# Auto-return to main menu after 3 seconds
+			await get_tree().create_timer(3.0).timeout
+			if game_state:
+				game_state.return_to_menu()
 
 func _on_game_over():
 	print("Game Over!")
