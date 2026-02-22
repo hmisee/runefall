@@ -14,8 +14,29 @@ signal game_over
 
 func _ready():
 	initialize_grid()
+	draw_boundaries()
 	spawn_elements()
 	spawn_new_pair()
+
+func draw_boundaries():
+	queue_redraw()
+
+func _draw():
+	# Draw grid boundaries
+	var border_color = Color.WHITE
+	var grid_rect = Rect2(0, 0, GRID_WIDTH * CELL_SIZE, GRID_HEIGHT * CELL_SIZE)
+	draw_rect(grid_rect, border_color, false, 3)
+	
+	# Draw grid lines
+	for x in range(1, GRID_WIDTH):
+		var line_start = Vector2(x * CELL_SIZE, 0)
+		var line_end = Vector2(x * CELL_SIZE, GRID_HEIGHT * CELL_SIZE)
+		draw_line(line_start, line_end, Color(0.3, 0.3, 0.3), 1)
+	
+	for y in range(1, GRID_HEIGHT):
+		var line_start = Vector2(0, y * CELL_SIZE)
+		var line_end = Vector2(GRID_WIDTH * CELL_SIZE, y * CELL_SIZE)
+		draw_line(line_start, line_end, Color(0.3, 0.3, 0.3), 1)
 
 func initialize_grid():
 	grid.resize(GRID_HEIGHT)
@@ -75,7 +96,12 @@ func handle_input():
 
 func move_pair_horizontal(direction: int):
 	var new_x = current_pair.grid_x + direction
-	if new_x >= 0 and new_x < GRID_WIDTH:
+	# Check bounds considering horizontal orientation
+	var max_x = GRID_WIDTH - 1
+	if current_pair.is_horizontal:
+		max_x = GRID_WIDTH - 2  # Need space for second rune
+	
+	if new_x >= 0 and new_x <= max_x:
 		if can_place_pair(new_x, current_pair.grid_y):
 			current_pair.grid_x = new_x
 			current_pair.position = grid_to_world(new_x, current_pair.grid_y)
@@ -94,7 +120,11 @@ func can_place_pair(x: int, y: int) -> bool:
 	
 	var positions = get_pair_positions(x, y)
 	for pos in positions:
-		if pos.y >= GRID_HEIGHT or grid[pos.y][pos.x] != null:
+		# Check bounds
+		if pos.x < 0 or pos.x >= GRID_WIDTH or pos.y < 0 or pos.y >= GRID_HEIGHT:
+			return false
+		# Check collision
+		if grid[pos.y][pos.x] != null:
 			return false
 	return true
 
