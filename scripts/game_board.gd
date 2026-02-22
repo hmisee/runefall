@@ -64,11 +64,17 @@ func spawn_new_pair():
 	current_pair = RunePair.new()
 	current_pair.grid_x = GRID_WIDTH / 2
 	current_pair.grid_y = 0
-	current_pair.position = grid_to_world(current_pair.grid_x, current_pair.grid_y)
+	# Position at top-left of the cell (rune1 will be at 0,0 relative to pair)
+	current_pair.position = Vector2(current_pair.grid_x * CELL_SIZE, current_pair.grid_y * CELL_SIZE)
 	add_child(current_pair)
 
 func grid_to_world(x: int, y: int) -> Vector2:
+	# Return center of cell for individual pieces
 	return Vector2(x * CELL_SIZE + CELL_SIZE / 2, y * CELL_SIZE + CELL_SIZE / 2)
+
+func grid_to_world_pair(x: int, y: int) -> Vector2:
+	# Return top-left corner for pairs
+	return Vector2(x * CELL_SIZE, y * CELL_SIZE)
 
 func _process(delta):
 	if current_pair == null:
@@ -104,13 +110,13 @@ func move_pair_horizontal(direction: int):
 	if new_x >= 0 and new_x <= max_x:
 		if can_place_pair(new_x, current_pair.grid_y):
 			current_pair.grid_x = new_x
-			current_pair.position = grid_to_world(new_x, current_pair.grid_y)
+			current_pair.position = grid_to_world_pair(new_x, current_pair.grid_y)
 
 func move_pair_down():
 	var new_y = current_pair.grid_y + 1
 	if can_place_pair(current_pair.grid_x, new_y):
 		current_pair.grid_y = new_y
-		current_pair.position = grid_to_world(current_pair.grid_x, new_y)
+		current_pair.position = grid_to_world_pair(current_pair.grid_x, new_y)
 	else:
 		lock_pair()
 
@@ -145,24 +151,23 @@ func lock_pair():
 	var rune1 = current_pair.rune1
 	rune1.grid_x = positions[0].x
 	rune1.grid_y = positions[0].y
+	rune1.reparent(self)
 	rune1.position = grid_to_world(rune1.grid_x, rune1.grid_y)
 	grid[rune1.grid_y][rune1.grid_x] = rune1
-	current_pair.remove_child(rune1)
-	add_child(rune1)
 	
 	# Place rune2
 	var rune2 = current_pair.rune2
 	rune2.grid_x = positions[1].x
 	rune2.grid_y = positions[1].y
+	rune2.reparent(self)
 	rune2.position = grid_to_world(rune2.grid_x, rune2.grid_y)
 	grid[rune2.grid_y][rune2.grid_x] = rune2
-	current_pair.remove_child(rune2)
-	add_child(rune2)
 	
 	current_pair.queue_free()
 	current_pair = null
 	
 	check_matches()
+	apply_gravity()
 	spawn_new_pair()
 
 func check_matches():
@@ -189,6 +194,17 @@ func check_matches():
 	
 	for piece in unique_remove.keys():
 		remove_piece(piece)
+	
+	# Apply gravity after removing pieces
+	if unique_remove.size() > 0:
+		apply_gravity()
+
+func has_empty_spaces_above_pieces() -> bool:
+	for y in range(GRID_HEIGHT - 1):
+		for x in range(GRID_WIDTH):
+			if grid[y][x] != null and grid[y + 1][x] == null:
+				return true
+	return false
 
 func check_line(start_x: int, start_y: int, dx: int, dy: int, count: int) -> Array:
 	var pieces = []
@@ -223,3 +239,24 @@ func get_piece_type(piece) -> int:
 func remove_piece(piece):
 	grid[piece.grid_y][piece.grid_x] = null
 	piece.queue_free()
+
+func apply_gravity():
+	# Apply gravity from bottom to top
+	var pieces_fell = true
+	while pieces_fell:
+		pieces_fell = false
+		for y in range(GRID_HEIGHT - 2, -1, -1):  # Start from second-to-bottom row
+			for x in range(GRID_WIDTH):
+				if grid[y][x] != null and grid[y + 1][x] == null:
+					# Move piece down
+					var piece = grid[y][x]
+					grid[y][x] = null
+					grid[y + 1][x] = piece
+					piece.grid_y = y + 1
+					piece.position = grid_to_world(x, y + 1)
+					pieces_fell = true
+	
+	# Check for new matches after gravity
+	check_matches()
+	if has_empty_spaces_above_pieces():
+		apply_gravity()

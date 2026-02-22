@@ -22,11 +22,11 @@ func randomize_runes():
 
 func update_positions():
 	if is_horizontal:
-		rune1.position = Vector2(-25, 0)
-		rune2.position = Vector2(25, 0)
+		rune1.position = Vector2(25, 25)
+		rune2.position = Vector2(75, 25)
 	else:
-		rune1.position = Vector2(0, -25)
-		rune2.position = Vector2(0, 25)
+		rune1.position = Vector2(25, 25)
+		rune2.position = Vector2(25, 75)
 
 func rotate_pair():
 	is_horizontal = !is_horizontal
