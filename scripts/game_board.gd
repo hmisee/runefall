@@ -101,23 +101,23 @@ func handle_input():
 		fall_speed = 0.5
 
 func rotate_current_pair():
-	# Calculate the orientation after rotation
-	var rotated_orientation = not current_pair.is_horizontal
+	# Calculate the target rotation state (next state in 0-3 cycle)
+	var target_rotation = (current_pair.rotation_state + 1) % 4
 	
-	# Try naive rotation (same grid_x, toggled orientation)
-	if can_place_pair(current_pair.grid_x, current_pair.grid_y, rotated_orientation):
+	# Try naive rotation (same grid_x, next rotation state)
+	if can_place_pair(current_pair.grid_x, current_pair.grid_y, target_rotation):
 		current_pair.rotate_pair()
 		return
 	
 	# Try wall-kick left (grid_x - 1)
-	if can_place_pair(current_pair.grid_x - 1, current_pair.grid_y, rotated_orientation):
+	if can_place_pair(current_pair.grid_x - 1, current_pair.grid_y, target_rotation):
 		current_pair.grid_x -= 1
 		current_pair.position = grid_to_world_pair(current_pair.grid_x, current_pair.grid_y)
 		current_pair.rotate_pair()
 		return
 	
 	# Try wall-kick right (grid_x + 1)
-	if can_place_pair(current_pair.grid_x + 1, current_pair.grid_y, rotated_orientation):
+	if can_place_pair(current_pair.grid_x + 1, current_pair.grid_y, target_rotation):
 		current_pair.grid_x += 1
 		current_pair.position = grid_to_world_pair(current_pair.grid_x, current_pair.grid_y)
 		current_pair.rotate_pair()
@@ -129,8 +129,8 @@ func move_pair_horizontal(direction: int):
 	var new_x = current_pair.grid_x + direction
 	# Check bounds considering horizontal orientation
 	var max_x = GRID_WIDTH - 1
-	if current_pair.is_horizontal:
-		max_x = GRID_WIDTH - 2  # Need space for second rune
+	if current_pair.rotation_state == 0 or current_pair.rotation_state == 2:
+		max_x = GRID_WIDTH - 2  # Need space for second rune in horizontal orientations
 	
 	if new_x >= 0 and new_x <= max_x:
 		if can_place_pair(new_x, current_pair.grid_y):
@@ -145,11 +145,11 @@ func move_pair_down():
 	else:
 		lock_pair()
 
-func can_place_pair(x: int, y: int, orientation: bool = current_pair.is_horizontal) -> bool:
+func can_place_pair(x: int, y: int, rotation: int = current_pair.rotation_state) -> bool:
 	if y >= GRID_HEIGHT:
 		return false
 	
-	var positions = get_pair_positions(x, y, orientation)
+	var positions = get_pair_positions(x, y, rotation)
 	for pos in positions:
 		# Check bounds
 		if pos.x < 0 or pos.x >= GRID_WIDTH or pos.y < 0 or pos.y >= GRID_HEIGHT:
@@ -159,14 +159,21 @@ func can_place_pair(x: int, y: int, orientation: bool = current_pair.is_horizont
 			return false
 	return true
 
-func get_pair_positions(x: int, y: int, orientation: bool = current_pair.is_horizontal) -> Array:
+func get_pair_positions(x: int, y: int, rotation: int = current_pair.rotation_state) -> Array:
 	var positions = []
-	if orientation:
-		positions.append(Vector2i(x, y))
-		positions.append(Vector2i(x + 1, y))
-	else:
-		positions.append(Vector2i(x, y))
-		positions.append(Vector2i(x, y + 1))
+	match rotation:
+		0:  # Horizontal: rune1 left, rune2 right
+			positions.append(Vector2i(x, y))
+			positions.append(Vector2i(x + 1, y))
+		1:  # Vertical: rune1 top, rune2 bottom
+			positions.append(Vector2i(x, y))
+			positions.append(Vector2i(x, y + 1))
+		2:  # Horizontal: rune2 left, rune1 right
+			positions.append(Vector2i(x + 1, y))
+			positions.append(Vector2i(x, y))
+		3:  # Vertical: rune2 top, rune1 bottom
+			positions.append(Vector2i(x, y + 1))
+			positions.append(Vector2i(x, y))
 	return positions
 
 func lock_pair():

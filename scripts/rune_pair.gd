@@ -5,7 +5,7 @@ var rune1: Rune
 var rune2: Rune
 var grid_x: int = 0
 var grid_y: int = 0
-var is_horizontal: bool = true
+var rotation_state: int = 0
 
 func _ready():
 	rune1 = Rune.new()
@@ -21,13 +21,20 @@ func randomize_runes():
 	rune2.set_rune_type(randi() % 4)
 
 func update_positions():
-	if is_horizontal:
-		rune1.position = Vector2(25, 25)
-		rune2.position = Vector2(75, 25)
-	else:
-		rune1.position = Vector2(25, 25)
-		rune2.position = Vector2(25, 75)
+	match rotation_state:
+		0:  # Horizontal: rune1 left, rune2 right
+			rune1.position = Vector2(25, 25)
+			rune2.position = Vector2(75, 25)
+		1:  # Vertical: rune1 top, rune2 bottom
+			rune1.position = Vector2(25, 25)
+			rune2.position = Vector2(25, 75)
+		2:  # Horizontal: rune2 left, rune1 right
+			rune1.position = Vector2(75, 25)
+			rune2.position = Vector2(25, 25)
+		3:  # Vertical: rune2 top, rune1 bottom
+			rune1.position = Vector2(25, 75)
+			rune2.position = Vector2(25, 25)
 
 func rotate_pair():
-	is_horizontal = !is_horizontal
+	rotation_state = (rotation_state + 1) % 4
 	update_positions()
