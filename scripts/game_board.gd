@@ -93,12 +93,37 @@ func handle_input():
 	elif Input.is_action_just_pressed("ui_right"):
 		move_pair_horizontal(1)
 	elif Input.is_action_just_pressed("ui_up"):
-		current_pair.rotate_pair()
+		rotate_current_pair()
 	elif Input.is_action_just_pressed("ui_down"):
 		fall_speed = 0.05
 	
 	if Input.is_action_just_released("ui_down"):
 		fall_speed = 0.5
+
+func rotate_current_pair():
+	# Calculate the orientation after rotation
+	var rotated_orientation = not current_pair.is_horizontal
+	
+	# Try naive rotation (same grid_x, toggled orientation)
+	if can_place_pair(current_pair.grid_x, current_pair.grid_y, rotated_orientation):
+		current_pair.rotate_pair()
+		return
+	
+	# Try wall-kick left (grid_x - 1)
+	if can_place_pair(current_pair.grid_x - 1, current_pair.grid_y, rotated_orientation):
+		current_pair.grid_x -= 1
+		current_pair.position = grid_to_world_pair(current_pair.grid_x, current_pair.grid_y)
+		current_pair.rotate_pair()
+		return
+	
+	# Try wall-kick right (grid_x + 1)
+	if can_place_pair(current_pair.grid_x + 1, current_pair.grid_y, rotated_orientation):
+		current_pair.grid_x += 1
+		current_pair.position = grid_to_world_pair(current_pair.grid_x, current_pair.grid_y)
+		current_pair.rotate_pair()
+		return
+	
+	# No valid position found - block rotation (do nothing)
 
 func move_pair_horizontal(direction: int):
 	var new_x = current_pair.grid_x + direction
@@ -120,11 +145,11 @@ func move_pair_down():
 	else:
 		lock_pair()
 
-func can_place_pair(x: int, y: int) -> bool:
+func can_place_pair(x: int, y: int, orientation: bool = current_pair.is_horizontal) -> bool:
 	if y >= GRID_HEIGHT:
 		return false
 	
-	var positions = get_pair_positions(x, y)
+	var positions = get_pair_positions(x, y, orientation)
 	for pos in positions:
 		# Check bounds
 		if pos.x < 0 or pos.x >= GRID_WIDTH or pos.y < 0 or pos.y >= GRID_HEIGHT:
@@ -134,9 +159,9 @@ func can_place_pair(x: int, y: int) -> bool:
 			return false
 	return true
 
-func get_pair_positions(x: int, y: int) -> Array:
+func get_pair_positions(x: int, y: int, orientation: bool = current_pair.is_horizontal) -> Array:
 	var positions = []
-	if current_pair.is_horizontal:
+	if orientation:
 		positions.append(Vector2i(x, y))
 		positions.append(Vector2i(x + 1, y))
 	else:
