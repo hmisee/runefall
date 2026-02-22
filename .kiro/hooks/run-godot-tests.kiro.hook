@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Run Godot Tests",
+  "description": "Automatically runs all Godot unit tests when test files are saved",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "tests/*.gd"
+    ]
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "./run_tests.bat"
+  }
+}
