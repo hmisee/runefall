@@ -1,0 +1,43 @@
+{
+  "defaults": {
+    "width": 64,
+    "height": 64,
+    "model_type": "pixel_art",
+    "style": "game_asset",
+    "remove_bg": true
+  },
+  "sprites": [
+    {
+      "prompt": "Fire rune square icon, glowing red and orange flames, pixel art, game asset",
+      "output": "assets/sprites/fire/fire_rune.png"
+    },
+    {
+      "prompt": "Water rune square icon, flowing blue water droplets, pixel art, game asset",
+      "output": "assets/sprites/water/water_rune.png"
+    },
+    {
+      "prompt": "Earth rune square icon, brown stone and green moss, pixel art, game asset",
+      "output": "assets/sprites/earth/earth_rune.png"
+    },
+    {
+      "prompt": "Air rune square icon, swirling white clouds and wind, pixel art, game asset",
+      "output": "assets/sprites/air/air_rune.png"
+    },
+    {
+      "prompt": "Angry fire elemental circle, red flames face with angry eyes, pixel art, game asset",
+      "output": "assets/sprites/fire/fire_element.png"
+    },
+    {
+      "prompt": "Angry water elemental circle, blue waves face with angry eyes, pixel art, game asset",
+      "output": "assets/sprites/water/water_element.png"
+    },
+    {
+      "prompt": "Angry earth elemental circle, brown rock face with angry eyes, pixel art, game asset",
+      "output": "assets/sprites/earth/earth_element.png"
+    },
+    {
+      "prompt": "Angry air elemental circle, white cloud face with angry eyes, pixel art, game asset",
+      "output": "assets/sprites/air/air_element.png"
+    }
+  ]
+}

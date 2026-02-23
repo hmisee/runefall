@@ -19,6 +19,12 @@ run/main_scene="res://scenes/main.tscn"
 config/features=PackedStringArray("4.6")
 config/icon="res://icon.png"
 
+[autoload]
+
+GameState="*res://scripts/game_state.gd"
+SpriteManager="*res://scripts/sprite_manager.gd"
+BackgroundManager="*res://scripts/background_manager.gd"
+
 [display]
 
 window/size/viewport_width=600

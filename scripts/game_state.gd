@@ -1,4 +1,3 @@
-class_name GameState
 extends Node
 
 ## GameState manages overall game state and level progression

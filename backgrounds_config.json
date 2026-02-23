@@ -1,0 +1,102 @@
+{
+  "_metadata": {
+    "_comment": "Background configuration for Runefall game backgrounds",
+    "_version": "1.0",
+    "_last_updated": "2024"
+  },
+  "_generation_metadata": {
+    "_comment": "AI generation parameters used to create background assets",
+    "generator_tool": "tools/background_generator.py",
+    "replicate_models": {
+      "static_backgrounds": {
+        "model": "retro-diffusion/rd-plus",
+        "version": "60eb48db78cbd38cc6473d309a311db08244ed021567a9234970af971bab0d87",
+        "description": "High-quality pixel art model for static level backgrounds"
+      },
+      "animated_backgrounds": {
+        "model": "retro-diffusion/rd-animation",
+        "version": "a9f33da7d9a985064dbc2d99621b87da5b8a22ed4d412c3a1c34ab4b807a6d8f",
+        "description": "Pixel art animation model for menu background frames"
+      }
+    },
+    "generation_parameters": {
+      "width": 600,
+      "height": 900,
+      "style": "game_background",
+      "remove_bg": false,
+      "num_images": 1,
+      "_comment": "All backgrounds generated at 600x900 to match game viewport"
+    },
+    "workflow": {
+      "step_1": "Edit generation_prompts section below with desired background descriptions",
+      "step_2": "Run: python tools/background_generator.py --config backgrounds_config.json",
+      "step_3": "Generated images are saved to paths specified in backgrounds section",
+      "step_4": "For animated backgrounds, multiple frames are generated automatically",
+      "_note": "Requires REPLICATE_API_TOKEN environment variable to be set"
+    }
+  },
+  "defaults": {
+    "opacity": 1.0,
+    "darken_bright_backgrounds": true,
+    "brightness_threshold": 0.6,
+    "darken_amount": 0.3,
+    "fallback_colors": {
+      "level_1": "#8B4513",
+      "level_2": "#4682B4",
+      "level_3": "#9370DB"
+    }
+  },
+  "backgrounds": {
+    "_comment": "Background asset paths and display settings for each level and menu",
+    "_note": "Paths use Godot resource format (res://). Type can be 'static', 'animated', or 'shader'",
+    "level_1": {
+      "path": "res://assets/backgrounds/level_1_bg.png",
+      "type": "static",
+      "opacity": 0.85,
+      "_theme": "Fire and Earth elements - warm volcanic landscape"
+    },
+    "level_2": {
+      "path": "res://assets/backgrounds/level_2_bg.png",
+      "type": "static",
+      "opacity": 0.85,
+      "_theme": "Water and Air elements - cool flowing streams and sky"
+    },
+    "level_3": {
+      "path": "res://assets/backgrounds/level_3_bg.png",
+      "type": "static",
+      "opacity": 0.85,
+      "_theme": "All elements mixed - epic swirling elemental energies"
+    },
+    "menu": {
+      "path": "res://assets/backgrounds/menu_bg",
+      "type": "animated",
+      "animation_speed": 1.0,
+      "loop": true,
+      "frame_count": 8,
+      "_theme": "Magical rune circle with mystical particles"
+    },
+    "_shader_example": {
+      "_comment": "Example shader-based background configuration (not used by default)",
+      "path": "res://assets/backgrounds/level_1_bg.png",
+      "type": "shader",
+      "shader_path": "res://assets/shaders/animated_background.gdshader",
+      "opacity": 0.85,
+      "shader_params": {
+        "time_scale": 0.5,
+        "color_tint": "#FFFFFF",
+        "wave_amplitude": 0.05,
+        "wave_frequency": 3.0,
+        "rotation_speed": 0.2
+      },
+      "_usage": "To use shader backgrounds, change a background's 'type' to 'shader' and add 'shader_path' and 'shader_params'"
+    }
+  },
+  "generation_prompts": {
+    "_comment": "Text prompts used by background_generator.py to create AI-generated backgrounds",
+    "_note": "These prompts are passed to Replicate models. Edit these to regenerate with different themes",
+    "level_1": "Mystical background with warm fire and earth tones, volcanic landscape with glowing embers, pixel art style, game background",
+    "level_2": "Serene background with cool water and air colors, flowing streams and cloudy sky, pixel art style, game background",
+    "level_3": "Epic background mixing all four elements, swirling elemental energies, pixel art style, game background",
+    "menu": "Animated magical rune circle slowly rotating, mystical energy particles, pixel art style, game background, 8 frames"
+  }
+}
