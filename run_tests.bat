@@ -34,7 +34,7 @@ echo Example: set GODOT_PATH=C:\path\to\Godot_v4.6.1-stable_win64_console.exe
 exit /b 1
 
 :run_tests
-"%GODOT_EXE%" --script tests/run_tests.gd
+"%GODOT_EXE%" --headless --script tests/run_tests.gd
 
 echo.
 echo === Test run complete ===

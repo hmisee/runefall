@@ -31,7 +31,7 @@ echo Please set GODOT_PATH environment variable or add godot to your PATH
 exit /b 1
 
 :run_test
-"%GODOT_EXE%" --script tests/run_background_setup_test.gd
+"%GODOT_EXE%" --headless --script tests/run_background_setup_test.gd
 
 echo.
 pause

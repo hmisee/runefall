@@ -33,7 +33,7 @@ echo Please set GODOT_PATH environment variable or add godot to your PATH
 exit /b 1
 
 :run_test
-"%GODOT_EXE%" --script tests/run_sprite_lifecycle.gd
+"%GODOT_EXE%" --headless --script tests/run_sprite_lifecycle.gd
 
 echo.
 echo === Test complete ===
