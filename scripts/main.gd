@@ -1,7 +1,7 @@
 extends Node2D
 
 @onready var game_board = $GameBoard
-@onready var game_state: GameState = null  # Will be set when GameState node is added
+@onready var game_state = GameState  # Use the autoload GameState
 @onready var game_ui = null  # Will be set when GameUI node is added
 @onready var main_menu = null  # Will be set when MainMenu node is added
 @onready var pause_menu = null  # Will be set when PauseMenu node is added
@@ -10,8 +10,7 @@ extends Node2D
 func _ready():
 	game_board.game_over.connect(_on_game_over)
 	
-	# Find all nodes
-	game_state = get_node_or_null("GameState")
+	# Find UI nodes (GameState is now the autoload, not a scene node)
 	game_ui = get_node_or_null("GameUI")
 	main_menu = get_node_or_null("MainMenu")
 	pause_menu = get_node_or_null("PauseMenu")

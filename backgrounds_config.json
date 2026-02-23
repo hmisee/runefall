@@ -20,12 +20,12 @@
       }
     },
     "generation_parameters": {
-      "width": 600,
-      "height": 900,
-      "style": "game_background",
+      "width": 384,
+      "height": 384,
+      "style": "environment",
       "remove_bg": false,
       "num_images": 1,
-      "_comment": "All backgrounds generated at 600x900 to match game viewport"
+      "_comment": "Backgrounds generated at 384x384 (model max), will be scaled to 600x900 in-game"
     },
     "workflow": {
       "step_1": "Edit generation_prompts section below with desired background descriptions",
@@ -94,9 +94,9 @@
   "generation_prompts": {
     "_comment": "Text prompts used by background_generator.py to create AI-generated backgrounds",
     "_note": "These prompts are passed to Replicate models. Edit these to regenerate with different themes",
-    "level_1": "Mystical background with warm fire and earth tones, volcanic landscape with glowing embers, pixel art style, game background",
-    "level_2": "Serene background with cool water and air colors, flowing streams and cloudy sky, pixel art style, game background",
-    "level_3": "Epic background mixing all four elements, swirling elemental energies, pixel art style, game background",
+    "level_1": "Volcanic cavern with glowing red and orange lava flows, warm fire and brown earth tones, mystical shamanic atmosphere, pixel art style, game background",
+    "level_2": "Serene sky temple with flowing blue water streams and white clouds, cool water and air colors, peaceful mystical atmosphere, pixel art style, game background",
+    "level_3": "Epic elemental nexus with all four elements swirling together, fire lava, water streams, earth rocks, air clouds mixing, intense magical energy, pixel art style, game background",
     "menu": "Animated magical rune circle slowly rotating, mystical energy particles, pixel art style, game background, 8 frames"
   }
 }

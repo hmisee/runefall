@@ -195,7 +195,7 @@ class BackgroundGenerator:
                     
                     backgrounds_list.append({
                         "prompt": frame_prompt,
-                        "output": frame_path,
+                        "output_path": frame_path,
                         "width": 600,
                         "height": 900,
                         "model_type": "animated",
@@ -205,11 +205,11 @@ class BackgroundGenerator:
                 # Static background
                 backgrounds_list.append({
                     "prompt": prompt,
-                    "output": bg_path,
-                    "width": 600,
-                    "height": 900,
+                    "output_path": bg_path,
+                    "width": 384,
+                    "height": 384,
                     "model_type": "pixel_art_hq",
-                    "style": "game_background"
+                    "style": "environment"
                 })
         
         if not backgrounds_list:

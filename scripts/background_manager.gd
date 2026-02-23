@@ -31,6 +31,10 @@ func _ready():
 	_preload_all_backgrounds()
 	is_initialized = true
 	_connect_to_game_state()
+	
+	# Load initial menu background
+	load_menu_background()
+	
 	print("Background_Manager initialized")
 
 ## Connect to GameState signals for automatic background transitions
@@ -87,8 +91,9 @@ func _on_level_started(level_number: int) -> void:
 		return
 	
 	# Load the appropriate level background
+	print(">>> Background_Manager: Loading background for level ", level_number)
 	load_level_background(level_number)
-	print("Transition: Loading level ", level_number, " background")
+	print(">>> Background_Manager: Level ", level_number, " background loaded. Current ID: ", current_background_id)
 
 ## Load configuration from backgrounds_config.json
 func load_config() -> Dictionary:
@@ -448,6 +453,14 @@ func _calculate_texture_brightness(texture: Texture2D) -> float:
 	if not image:
 		return 0.0
 	
+	# Decompress if needed (compressed images can't use get_pixel)
+	if image.is_compressed():
+		image.decompress()
+		if image.is_compressed():
+			# Still compressed, can't read pixels - assume medium brightness
+			push_warning("Cannot calculate brightness for compressed texture, assuming 0.5")
+			return 0.5
+	
 	# Sample pixels to estimate brightness (sample every 10th pixel for performance)
 	var total_brightness = 0.0
 	var sample_count = 0
@@ -496,6 +509,7 @@ func load_level_background(level_number: int) -> void:
 		return
 	
 	var background_id = "level_" + str(level_number)
+	print(">>> load_level_background called for: ", background_id)
 	_load_background(background_id)
 
 ## Load the menu background
